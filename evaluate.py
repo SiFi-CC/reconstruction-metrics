@@ -12,8 +12,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Evaluates the reconstructed events for the SiFi-CC')
 parser.add_argument('-f', '--file', required=True, type=str, 
                     help='The root file containing the reconstructed events')
-parser.add_argument('-d', '--source_dir', default='.', type=str, metavar='DIRECTORY',
-                    help='Directory of the source simulation root file. Default directory is ./')
+parser.add_argument('-s', '--source', default='.', type=str, metavar='PATH',
+                    help='The path of the source simulation root file. Default path is ./')
 parser.add_argument('--e_pos_x', default=2.6, type=float, metavar='VALUE',
                     help='The distance limit for the x-axis of the electon. Default is 2.6 mm')
 parser.add_argument('--e_pos_y', default=10, type=float, metavar='VALUE',
@@ -43,7 +43,7 @@ cone_tt = recon_file[b'ConeList;1']
 
 # read the evaluation settings
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-source_path = os.path.join(args.source_dir, str(stat_tt['InputFilename'].array()[0]))
+source_path = os.path.join(args.source, str(stat_tt['InputFilename'].array()[0]))
 start_entry = stat_tt['StartEvent'].array()[0]
 stop_entry = stat_tt['StopEvent'].array()[0]+1
 n_events = stat_tt['TotalSimNev'].array()[0]
