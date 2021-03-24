@@ -14,7 +14,9 @@ def main():
     parser.add_argument('-f', '--file', required=True, type=str, 
                         help='The root file containing the reconstructed events')
     parser.add_argument('-s', '--source', default='.', type=str, metavar='PATH',
-                        help='The path of the source simulation root file. Default path is ./')
+                        help='The directory or the path of the source simulation root file.' + 
+                        'If the root file path is priveded, it overwrite the value of \'InputFilename\'. ' +
+                        ' Default path is ./')
     parser.add_argument('--e_pos_x', default=2.6, type=float, metavar='VALUE',
                         help='The distance limit for the x-axis of the electon. Default is 2.6 mm')
     parser.add_argument('--e_pos_y', default=10, type=float, metavar='VALUE',
@@ -38,16 +40,18 @@ def main():
         recon_file = uproot.open(args.file)
     except Exception as e:
         print('Error:', str(e))
+        return
 
     stat_tt = recon_file[b'TreeStat;1']
     cone_tt = recon_file[b'ConeList;1']
 
     # read the evaluation settings
     np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-    if 'InputFilename' in stat_tt:
-        source_path = os.path.join(args.source, str(stat_tt['InputFilename'].array()[0]))
-    else:
+    if 'InputFilename' not in stat_tt or args.source.endswith('.root'):
         source_path = args.source
+    else:
+        source_path = os.path.join(args.source, str(stat_tt['InputFilename'].array()[0]))
+        
     start_entry = stat_tt['StartEvent'].array()[0]
     stop_entry = stat_tt['StopEvent'].array()[0]+1
     n_events = stat_tt['TotalSimNev'].array()[0]
@@ -83,10 +87,12 @@ def main():
     p_energy = cone_tt.array('E2').reshape((-1,1))
 
     # open the simulation root file
+    print('source root file:', source_path)
     try:
         simulation = Simulation(source_path)
     except Exception as e:
         print('Error:', str(e))
+        return
 
 
     entry = start_entry
@@ -105,7 +111,7 @@ def main():
 
     # iterate through the evaluated events from the simulation root file
     for event in simulation.iterate_events(entry_start=start_entry, entry_stop=stop_entry, 
-                                           bar_update_size=1, desc='evaluating recons.'):
+                                           bar_update_size=1, desc='evaluating'):
         # any event with at least one cluster in both modules is a valid event
         if event.is_distributed_clusters:
             valid_events += 1
@@ -165,10 +171,10 @@ def main():
 
     # print the evaluations
     print()
-    print('Processed events: {:10,d}'.format(n_events))
-    print('Valid events:     {:10,d}'.format(valid_events))
-    print('Compton events:   {:10,d}'.format(len(l_matches)))
-    print('Recon. Comptons:  {:10,d}\n'.format(len(l_entries)))
+    print('Processed events:  {:10,d}'.format(n_events))
+    print('Valid events:      {:10,d}'.format(valid_events))
+    print('Compton events:    {:10,d}\n'.format(len(l_matches)))
+    print('Predicted Comptons:{:10,d}'.format(len(l_entries)))
     print('Matches:  {:9,d}'.format(sum(l_matches)))
     print('  Efficiency: {:5.3f}'.format(sum(l_matches)/len(l_matches)))
     print('  Purity:     {:5.3f}'.format(sum(l_matches)/len(l_entries)))

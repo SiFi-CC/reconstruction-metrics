@@ -18,7 +18,8 @@ required arguments:
 optional arguments:
   -h, --help            show the help message and exit
   -s PATH, --source PATH
-                        The path of the source simulation root file. Default path is ./
+                        The directory or the path of the source simulation root file.If the root file path is
+                        priveded, it overwrite the value of 'InputFilename'. Default path is ./
   --e_pos_x VALUE       The distance limit for the x-axis of the electon. Default is 2.6 mm
   --e_pos_y VALUE       The distance limit for the y-axis of the electon. Default is 10 mm
   --e_pos_z VALUE       The distance limit for the z-axis of the electon. Default is 2.6 mm
